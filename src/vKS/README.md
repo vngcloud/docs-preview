@@ -4,3 +4,4 @@
 # VngCloud Kubernetes Service (VKS)
 - [NodeGroups](nodegroup.md)
   - [NVIDIA GPU NodeGroups](gpu/nvidia.md)
+    - [User Managed](gpu/user-managed.md)

@@ -9,3 +9,4 @@
 - [vKS](vKS/README.md)
   - [NodeGroup](vKS/nodegroup.md)
     - [NVIDIA GPU NodeGroup](vKS/gpu/nvidia.md)
+      - [User Managed](vKS/gpu/user-managed.md)
