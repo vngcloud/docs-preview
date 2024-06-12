@@ -22,9 +22,12 @@
 
 <center>
 
-  ![](./../../images/nodegroup/01.png)
+  ![](./../../images/nodegroup/01.1.png)
 
 </center>
+
+# Install GPU Operator
+
 
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
