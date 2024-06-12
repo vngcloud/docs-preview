@@ -27,7 +27,7 @@
   helm version
   
   # Check kubectl-view-allocations version
-  kubectl view-allocations --version
+  kubectl-view-allocations --version
   ```
 
 <center>
@@ -83,7 +83,7 @@
     ![](./../../images/nodegroup/05.png)
 
   </center>
-  
+
   > - For the above result, the single node in the cluster has the `nvidia.com/gpu` label, which means that the node has GPUs.
   > - These labels also tell that this node is using 1 card of RTX 2080Ti GPU, number of available GPUs, the GPU Memory and other information.
 
