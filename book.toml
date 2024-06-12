@@ -1,24 +1,30 @@
 [book]
-authors = ["The Kubebuilder Maintainers"]
+title = "VNGCLOUD docs-preview"
+authors = ["An. Nguyen Dinh"]
+language = "en"
 multilingual = false
 src = "src"
-title = "The Kubebuilder Book"
+
+[preprocessor.theme]
+pagetoc = true
+sidebar-width = "250px"
 
 [output.html]
-curly-quotes = true
-additional-css = ["theme/css/markers.css", "theme/css/custom.css", "theme/css/version-dropdown.css"]
-git-repository-url = "https://github.com/kubernetes-sigs/kubebuilder"
-edit-url-template = "https://github.com/kubernetes-sigs/kubebuilder/edit/master/docs/book/{path}"
+default-theme = "light"
+git-repository-url = ""
+additional-css = ["theme/pagetoc.css"]
+additional-js = ["theme/pagetoc.js"]
 
-[preprocessor.literatego]
-command = "./litgo.sh"
+[output.html.fold]
+enable = false
+level = 1
 
-[preprocessor.markerdocs]
-command = "./markerdocs.sh"
+[output.html.playground]
+editable = true
 
-[context.environment]
-  environment = { GO_VERSION = "1.22" }
+[output.html.print]
+enable = false
 
-[context.deploy-preview.environment]
-  environment = { GO_VERSION = "1.22" }
-
+[output.theme-ace]
+theme-white = "xcode"
+theme-dark = "monokai"
