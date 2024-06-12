@@ -2,5 +2,5 @@
 
 
 # VngCloud Kubernetes Service (VKS)
-- [NodeGroup](nodegroup.md)
-  - [NVIDIA GPU NodeGroup](gpu/nvidia.md)
+- [NodeGroups](nodegroup.md)
+  - [NVIDIA GPU NodeGroups](gpu/nvidia.md)
