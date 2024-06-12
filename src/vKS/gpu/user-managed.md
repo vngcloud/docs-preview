@@ -12,6 +12,17 @@
   - Autoscale GPU resources in a VKS cluster.
 
 - The image below shows my machine setup, it will be used in this guide:
+  ```bash
+  # Check kubectl CLI version
+  kubectl version
+
+  # Check Helm version
+  helm version
+  
+  # Check kubectl-view-allocations version
+  kubectl view-allocations --version
+  ```
+
 <center>
 
   ![](./../../images/nodegroup/02.png)
