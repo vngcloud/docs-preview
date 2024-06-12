@@ -11,6 +11,14 @@
   - Monitor GPU resources in a VKS cluster.
   - Autoscale GPU resources in a VKS cluster.
 
+# Prerequisites
+- A VKS cluster with at least **one NVIDIA GPU nodegroup**.
+- `kubectl` command-line tool installed on your machine. For more information, see [Install and Set Up kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
+- `helm` command-line tool installed on your machine. For more information, see [Installing Helm](https://helm.sh/docs/intro/install/).
+- Other tools and libraries required by your GPU workload.
+  - `kubectl-view-allocations` plugin for monitoring cluster resources. For more information, see [kubectl-view-allocations](https://github.com/davidB/kubectl-view-allocations)
+
+
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
 </div>
