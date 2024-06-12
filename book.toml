@@ -1,6 +1,6 @@
 [book]
-title = "VNGCLOUD docs-preview"
-authors = ["An. Nguyen Dinh"]
+title = "VngCloud Documentation"
+authors = ["VngCloud"]
 language = "en"
 multilingual = false
 src = "src"
