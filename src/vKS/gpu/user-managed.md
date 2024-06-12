@@ -18,6 +18,13 @@
 - (Optional) Other tools and libraries that you can use to monitor and manage your Kubernetes resources:
   - `kubectl-view-allocations` plugin for monitoring cluster resources. For more information, see [kubectl-view-allocations](https://github.com/davidB/kubectl-view-allocations).
 
+- The image below is my cluster with 1 NVIDIA GPU nodegroup, it will be used in this guide.
+
+<center>
+
+  ![](./../../images/nodegroup/01.png)
+
+</center>
 
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
