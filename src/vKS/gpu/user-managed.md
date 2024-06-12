@@ -47,8 +47,31 @@
 
 </center>
 
-# Install GPU Operator
+# Installing the GPU Operator
+- This guide only focus on installing the NVIDIA GPU Operator, for more information about the NVIDIA GPU Operator, see [NVIDIA GPU Operator Documentation](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/getting-started.html). We manually install the NVIDIA GPU Operator in a VKS cluster by using Helm charts, execute the following command to install the NVIDIA GPU Operator in your VKS cluster:
+  ```bash
+  helm install nvidia-gpu-operator --wait --version v24.3.0 \
+    -n gpu-operator --create-namespace \
+    oci://vcr.vngcloud.vn/81-vks-public/vks-helm-charts/gpu-operator \
+    --set dcgmExporter.serviceMonitor.enabled=true
+  ```
 
+<center>
+
+  ![](./../../images/nodegroup/03.png)
+
+</center>
+
+- You **MUST** wait for the installation to complete _(about 5-10 minutes)_, execute the following command to check all the pods in the `gpu-operator` namespace are **running**:
+  ```bash
+  kubectl -n gpu-operator get pods -owide
+  ```
+
+<center>
+
+  ![](./../../images/nodegroup/04.png)
+
+</center>
 
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
