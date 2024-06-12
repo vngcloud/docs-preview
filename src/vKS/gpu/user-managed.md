@@ -73,6 +73,18 @@
 
 </center>
 
+- The operator will label the node with the `nvidia.com/gpu` label, which can be used to filter the nodes that have GPUs. The `nvidia.com/gpu` label is used by the NVIDIA GPU Operator to identify nodes that have GPUs. The NVIDIA GPU Operator will only deploy the NVIDIA GPU device plugin on nodes that have the `nvidia.com/gpu` label.
+  ```bash
+  NODE_NAME=<put-your-node-name>
+  kubectl get node -o json $NODE_NAME | jq '.items[].metadata.labels' | grep "nvidia.com"
+  ```
+
+<center>
+
+  ![](./../../images/nodegroup/05.png)
+
+</center>
+
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
 </div>
