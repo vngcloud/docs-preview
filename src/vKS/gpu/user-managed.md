@@ -87,6 +87,18 @@
   > - For the above result, the single node in the cluster has the `nvidia.com/gpu` label, which means that the node has GPUs.
   > - These labels also tell that this node is using 1 card of RTX 2080Ti GPU, number of available GPUs, the GPU Memory and other information.
 
+- On the pod `nvidia-device-plugin-daemonset` in the `gpu-operator` namespace, you can execute `nvidia-smi` command to check the GPU information of the node:
+  ```bash
+  POD_NAME=$(kubectl -n gpu-operator get pods -l app=nvidia-device-plugin-daemonset -o jsonpath='{.items[0].metadata.name}')
+  kubectl -n gpu-operator exec -it $POD_NAME -- nvidia-smi
+  ```
+
+<center>
+  
+  ![](./../../images/nodegroup/06.png)
+
+</center>
+
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
 </div>
