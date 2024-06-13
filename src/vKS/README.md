@@ -5,3 +5,5 @@
 - [NodeGroups](nodegroup.md)
   - [NVIDIA GPU NodeGroups](gpu/nvidia.md)
     - [User Managed](gpu/user-managed.md)
+
+- [Addons](addons.md)

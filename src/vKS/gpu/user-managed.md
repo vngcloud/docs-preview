@@ -106,6 +106,7 @@
 </center>
 
 # Deploy your GPU workload
+## Cuda VectorAdd Test
 
 - In this section, we will show you how to deploy a GPU workload in a VKS cluster. We will use the `cuda-vectoradd-test` workload as an example. The `cuda-vectoradd-test` workload is a simple CUDA program that adds two vectors together. The program is provided as a container image that you can deploy in your VKS cluster. See file [cuda-vectoradd-test.yaml](https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/cuda-vectoradd-test.yaml).
 
@@ -126,6 +127,9 @@
 ![](./../../images/nodegroup/07.png)
 
 </center>
+
+## TensorFlow Test
+- In this section, we apply a `Deployment` manifest for a TensorFlow GPU application. The purpose of this `Deployment` is to create and manage a single pod running a TensorFlow container that utilizes GPU resource for executing 
 
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>

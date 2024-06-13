@@ -10,3 +10,4 @@
   - [NodeGroup](vKS/nodegroup.md)
     - [NVIDIA GPU NodeGroup](vKS/gpu/nvidia.md)
       - [User Managed](vKS/gpu/user-managed.md)
+  - [Addons](vKS/addons.md)
