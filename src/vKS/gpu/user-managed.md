@@ -143,7 +143,7 @@
   ```bash
   # Apply the manifest
   kubectl apply -f \
-  https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/tensorflow-gpu.yaml
+    https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/tensorflow-gpu.yaml
 
   # Check the pods
   kubectl get pods
@@ -176,7 +176,80 @@
 ## GPU time-slicing
 - VKS uses the built-in timesharing ability provided by the NVIDIA GPU and the software stack. Starting with the **[Pascal architecture](https://www.nvidia.com/en-us/data-center/pascal-gpu-architecture/)**, NVIDIA GPUs support instruction level preemption. When doing context switching between processes running on a GPU, instruction-level preemption ensures every process gets a fair timeslice. GPU time-sharing provides software-level isolation between the workloads in terms of address space isolation, performance isolation, and error isolation.
 
+### Configure GPU time-slicing
+- To enable GPU time-slicing, you need to configure a `ConfigMap` with the following settings:
+  ```yaml
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: gpu-sharing-config
+  data:
+    any: |-
+      version: v1
+      flags:
+        migStrategy: none            # Disable MIG, MUST be none in the case your GPU is not supported MIG
+      sharing:
+        timeSlicing:
+          resources:
+          - name: nvidia.com/gpu     # Only apply for the node with the node.status contains 'nvidia.com/gpu'
+            replicas: 4              # Allow 4 pods to share the GPU, SHOULD less than 48 pods
+  ```
+- The above manifest allows 4 pods to share the GPU. The `replicas` field specifies the number of pods that can share the GPU. The `replicas` field should be less than the number of GPUs on the node. The `nvidia.com/gpu` label is used to filter the nodes that have GPUs. The `migStrategy` field is set to `none` to disable MIG.
+- This configuration will apply to all nodes in the cluster that have the `nvidia.com/gpu` label. To apply the configuration, execute the following command:
+  ```bash
+  kubectl -n gpu-operator create -f \
+    https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/time-slicing-config-all.yaml
+  ```
 
+- And then you need to patch the `ClusterPolicy` to enable GPU time-slicing using the `any` setting:
+  ```bash
+  # Patch the ClusterPolicy
+  kubectl patch clusterpolicies.nvidia.com/cluster-policy \
+    -n gpu-operator --type merge \
+    -p '{"spec": {"devicePlugin": {"config": {"name": "gpu-sharing-config", "default": "any"}}}}'
+  
+  # Disable DCGM exporter, time-slicing not support DCGM exporter
+  kubectl patch clusterpolicies.nvidia.com/cluster-policy \
+    -n gpu-operator --type merge \
+    -p '{"spec": {"dcgmExporter": {"enabled": false}}}'
+  ```
+  <center>
+
+  ![](./../../images/nodegroup/09.png)
+
+  </center>
+
+  > - Your new configuration will be applied to all nodes in the cluster that have the `nvidia.com/gpu` label.
+  > - The configuration is considered successful if the `ClusterPolicy` **STATUS** is `ready`.
+  > - Because of the `sharing.timeSlicing.resources.replicas` is set to 4, you can deploy up to 4 pods that share the GPU.
+  > - My cluster has only 1 GPU node, so I can deploy up to 4 pods that share the GPU.
+
+### Verify GPU time-slicing
+- Until now, we have configured the GPU time-slicing, now we will deploy 5 pods that share the GPU using `Deployment`, because of only 4 pods can share the GPU, the 5th pod will be in `Pending` state. See file [time-slicing-verification.yaml](https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/time-slicing-verification.yaml).
+
+  ```bash
+  # Apply the manifest
+  kubectl apply -f \
+    https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/time-slicing-verification.yaml
+
+  # Check the pods
+  kubectl get pods
+
+  # Check the logs of the TensorFlow pod
+  kubectl logs <put-your-time-slicing-verification-pod-name> --tail 10
+
+  # Get the event of pending pod
+  kubectl events | grep "FailedScheduling"
+
+  # [Optional] Clean the resources
+  kubectl delete deploy time-slicing-verification
+  ```
+
+  <center>
+
+  ![](./../../images/nodegroup/10.png)
+
+  </center>
 
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
