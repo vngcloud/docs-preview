@@ -326,7 +326,78 @@
 
   </center>
  
+## Applying Multiple Node-Specific Configurations
+- An alternative to applying one cluster-wide configuration is to specify **multiple time-slicing configurations** in the `ConfigMap` and to **apply labels** node-by-node to control which configuration is applied to which nodes.
+- In this guideline, I add a new RTX-4090 into the cluster.
+- This configuration should be greate if your cluster have multiple nodes with different GPU models. For example:
+  - NodeGroup 1 includes the instance of GPU RTX 2080Ti.
+  - NodeGroup 2 includes the instance of GPU RTX 4090.
+- And if you want to run multiple GPU sharing strategies in the same cluster, you can apply multiple configurations to the same node by using labels. For example:
+  - NodeGroup 1 includes the instance of GPU RTX 2080Ti with 4 pods sharing the GPU using time-slicing.
+  - NodeGroup 2 includes the instance of GPU RTX 4090 with 8 pods sharing the GPU using MPS.
 
+### Configure Multiple Node-Specific Configurations
+- To using this feature, you need to update the previous `ConfigMap` with the following settings:
+  ```yaml
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: gpu-multi-sharing-config
+  data:
+    rtx-2080ti: |-                                # Same the name with the name that you label the GPU node before
+      version: v1
+      flags:
+        migStrategy: none                         # MIG strategy is not used, this field SHOULD depends on your GPU model
+      sharing:
+        timeSlicing:
+          resources:
+          - name: nvidia.com/gpu
+            replicas: 4                           # Allow the node using this GPU to be shared by 4 pods
+    rtx-4090: |-                                  # Same the name with the name that you label the GPU node before
+      version: v1
+      flags:
+        migStrategy: none                         # MIG strategy is not used, this field SHOULD depends on your GPU model
+      sharing:
+        mps:
+          resources:
+          - name: nvidia.com/gpu
+            replicas: 8                           # Allow the node using this GPU to be shared by 8 pods
+  ```
+- Apply the above configure.
+  ```bash
+  kubectl -n gpu-operator create -f \
+    https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/multiple-gpu-sharing.yaml
+
+  # Patch the ClusterPolicy
+  kubectl patch clusterpolicies.nvidia.com/cluster-policy \
+    -n gpu-operator --type merge \
+    -p '{"spec": {"devicePlugin": {"config": {"name": "gpu-multi-sharing-config"}}}}'
+
+  # Disable DCGM exporter
+  kubectl patch clusterpolicies.nvidia.com/cluster-policy \
+    -n gpu-operator --type merge \
+    -p '{"spec": {"dcgmExporter": {"enabled": false}}}'
+  ```
+  <center>
+
+  ![](./../../images/nodegroup/13.png)
+
+  </center>
+
+- Now, we need to label the node with the name that you specified in the `ConfigMap`:
+  ```bash
+  # Label the node with the name that you specified in the ConfigMap
+  kubectl label node <node-name> nvidia.com/device-plugin.config=rtx-2080ti
+  kubectl label node <node-name> nvidia.com/device-plugin.config=rtx-4090
+
+  # [Optional] Just for confirm
+  kubectl get clusterpolicy # make sure STATUS is ready
+  ```
+  <center>
+
+  ![](./../../images/nodegroup/14.png)
+
+  </center>
 
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
