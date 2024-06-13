@@ -251,6 +251,83 @@
 
   </center>
 
+## Multi-process server (MPS)
+- VKS uses NVIDIA's [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/pdf/CUDA_Multi_Process_Service_Overview.pdf). NVIDIA MPS is an alternative, binary-compatible implementation of the CUDA API designed to transparently enable co-operative multi-process CUDA workloads to run concurrently on a single GPU device. GPU with NVIDIA MPS provides software-level isolation in terms of resource limits ([active thread percentage](https://docs.nvidia.com/deploy/mps/index.html#topic_5_2_5) and [pinned device memory](https://docs.nvidia.com/deploy/mps/index.html#topic_5_2_7)).
+
+### Configure MPS
+- To enable GPU MPS, you need to update the previous `ConfigMap` with the following settings:
+  ```yaml
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: gpu-sharing-config
+  data:
+    any-mps: |-
+      version: v1
+      flags:
+        migStrategy: none            # MIG strategy is not used, this field SHOULD depends on your GPU model
+      sharing:
+        mps:                         # Enable MPS for the GPU
+          resources:
+          - name: nvidia.com/gpu     # Only apply for the node with the node.status contains 'nvidia.com/gpu'
+            replicas: 4              # Allow 4 pods to share the GPU
+  ```
+- Now let's apply this new `ConfigMap` and then patching the `ClusterPolicy` like the way at the GPU time-slicing section.
+  ```bash
+  # Delete the old configmap
+  kubectl -n gpu-operator delete cm gpu-sharing-config
+  kubectl -n gpu-operator create -f \
+    https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/mps-config-all.yaml
+
+  # Patch the ClusterPolicy
+  kubectl patch clusterpolicies.nvidia.com/cluster-policy \
+    -n gpu-operator --type merge \
+    -p '{"spec": {"devicePlugin": {"config": {"name": "gpu-sharing-config", "default": "any-mps"}}}}'
+  
+  # Disable DCGM exporter, MPS not support DCGM exporter
+  kubectl patch clusterpolicies.nvidia.com/cluster-policy \
+    -n gpu-operator --type merge \
+    -p '{"spec": {"dcgmExporter": {"enabled": false}}}'
+
+  # Check MPS server is running or not
+  kubectl -n gpu-operator get pods
+  ```
+  <center>
+
+  ![](./../../images/nodegroup/11.png)
+
+  </center>
+
+  > - Your new configuration will be applied to all nodes in the cluster that have the `nvidia.com/gpu` label.
+  > - The configuration is considered successful if the `ClusterPolicy` **STATUS** is `ready`.
+  > - Because of the `sharing.mps.resources.replicas` is set to 4, you can deploy up to 4 pods that share the GPU.
+
+### Verify MPS
+- Until now, we have configured the GPU MPS, now we will deploy 5 pods that share the GPU using `Deployment`, because of only 4 pods can share the GPU, the 5th pod will be in `Pending` state. See file [mps-verification.yaml](https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/mps-verification.yaml).
+
+  ```bash
+  # Apply the manifest
+  kubectl apply -f \
+    https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/mps-verification.yaml
+
+  # Check the pods
+  kubectl get pods
+
+  # Check the logs of the TensorFlow pod
+  kubectl logs -l job-name=nbody-sample
+
+  # [Optional] Clean the resources
+  kubectl delete job nbody-sample
+  ```
+
+  <center>
+
+  ![](./../../images/nodegroup/12.png)
+
+  </center>
+ 
+
+
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
 </div>
