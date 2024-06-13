@@ -33,26 +33,28 @@
   kubectl-view-allocations --version
   ```
 
-<center>
+  <center>
 
-![](./../../images/nodegroup/02.png)
+  ![](./../../images/nodegroup/02.png)
 
-</center>
+  </center>
 
 - And this is my VKS cluster with 1 NVIDIA GPU nodegroup, it will be used in this guide, execute the following command to check the nodegroup in your cluster:
+
   ```bash
   kubectl get nodes -owide
   ```
 
-<center>
+  <center>
 
-![](./../../images/nodegroup/01.1.png)
+  ![](./../../images/nodegroup/01.1.png)
 
-</center>
+  </center>
 
 # Installing the GPU Operator
 
 - This guide only focus on installing the NVIDIA GPU Operator, for more information about the NVIDIA GPU Operator, see [NVIDIA GPU Operator Documentation](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/getting-started.html). We manually install the NVIDIA GPU Operator in a VKS cluster by using Helm charts, execute the following command to install the NVIDIA GPU Operator in your VKS cluster:
+
   ```bash
   helm install nvidia-gpu-operator --wait --version v24.3.0 \
     -n gpu-operator --create-namespace \
@@ -60,22 +62,23 @@
     --set dcgmExporter.serviceMonitor.enabled=true
   ```
 
-<center>
+  <center>
 
-![](./../../images/nodegroup/03.png)
+  ![](./../../images/nodegroup/03.png)
 
-</center>
+  </center>
 
 - You **MUST** wait for the installation to complete _(about 5-10 minutes)_, execute the following command to check all the pods in the `gpu-operator` namespace are **running**:
+
   ```bash
   kubectl -n gpu-operator get pods -owide
   ```
 
-<center>
+  <center>
 
-![](./../../images/nodegroup/04.png)
+  ![](./../../images/nodegroup/04.png)
 
-</center>
+  </center>
 
 - The operator will label the node with the `nvidia.com/gpu` label, which can be used to filter the nodes that have GPUs. The `nvidia.com/gpu` label is used by the NVIDIA GPU Operator to identify nodes that have GPUs. The NVIDIA GPU Operator will only deploy the NVIDIA GPU device plugin on nodes that have the `nvidia.com/gpu` label.
 
@@ -94,18 +97,20 @@
   > - These labels also tell that this node is using 1 card of RTX 2080Ti GPU, number of available GPUs, the GPU Memory and other information.
 
 - On the pod `nvidia-device-plugin-daemonset` in the `gpu-operator` namespace, you can execute `nvidia-smi` command to check the GPU information of the node:
+
   ```bash
   POD_NAME=$(kubectl -n gpu-operator get pods -l app=nvidia-device-plugin-daemonset -o jsonpath='{.items[0].metadata.name}')
   kubectl -n gpu-operator exec -it $POD_NAME -- nvidia-smi
   ```
 
-<center>
-  
-  ![](./../../images/nodegroup/06.png)
+  <center>
+    
+    ![](./../../images/nodegroup/06.png)
 
-</center>
+  </center>
 
 # Deploy your GPU workload
+
 ## Cuda VectorAdd Test
 
 - In this section, we will show you how to deploy a GPU workload in a VKS cluster. We will use the `cuda-vectoradd-test` workload as an example. The `cuda-vectoradd-test` workload is a simple CUDA program that adds two vectors together. The program is provided as a container image that you can deploy in your VKS cluster. See file [cuda-vectoradd-test.yaml](https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/cuda-vectoradd-test.yaml).
@@ -120,16 +125,44 @@
 
   # Check the logs of the pod
   kubectl logs cuda-vectoradd
+
+  # [Optional] Clean the resources
+  kubectl delete deploy cuda-vectoradd
   ```
 
-<center>
+  <center>
 
-![](./../../images/nodegroup/07.png)
+  ![](./../../images/nodegroup/07.png)
 
-</center>
+  </center>
 
 ## TensorFlow Test
-- In this section, we apply a `Deployment` manifest for a TensorFlow GPU application. The purpose of this `Deployment` is to create and manage a single pod running a TensorFlow container that utilizes GPU resource for executing 
+
+- In this section, we apply a `Deployment` manifest for a TensorFlow GPU application. The purpose of this `Deployment` is to create and manage a single pod running a TensorFlow container that utilizes GPU resource for executing the sum of random values from a normal distribution of size \\( 100000 \\) by \\( 100000 \\). For more detail about the manifest, see file [tensorflow-gpu.yaml](https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/tensorflow-gpu.yaml)
+
+  ```bash
+  # Apply the manifest
+  kubectl apply -f \
+  https://raw.githubusercontent.com/vngcloud/kubernetes-sample-apps/main/nvidia-gpu/manifest/tensorflow-gpu.yaml
+
+  # Check the pods
+  kubectl get pods
+
+  # Check processes are running using nvidia-smi
+  kubectl -n gpu-operator exec -it <put-your-nvidia-driver-daemonset-pod-name> -- nvidia-smi
+
+  # Check the logs of the TensorFlow pod
+  kubectl logs <put-your-tensorflow-gpu-pod-name> --tail 20
+
+  # [Optional] Clean the resources
+  kubectl delete deploy tensorflow-gpu
+  ```
+
+  <center>
+
+  ![](./../../images/nodegroup/08.png)
+
+  </center>
 
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
