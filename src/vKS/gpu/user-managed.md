@@ -377,27 +377,57 @@
   kubectl patch clusterpolicies.nvidia.com/cluster-policy \
     -n gpu-operator --type merge \
     -p '{"spec": {"dcgmExporter": {"enabled": false}}}'
+
+  # Check the ClusterPolicy
+  kubectl get clusterpolicy
   ```
   <center>
 
-  ![](./../../images/nodegroup/13.png)
+  ![](./../../images/nodegroup/13.1.png)
 
   </center>
 
 - Now, we need to label the node with the name that you specified in the `ConfigMap`:
   ```bash
+  # Get the node names
+  kubectl get nodes
+
   # Label the node with the name that you specified in the ConfigMap
   kubectl label node <node-name> nvidia.com/device-plugin.config=rtx-2080ti
   kubectl label node <node-name> nvidia.com/device-plugin.config=rtx-4090
-
-  # [Optional] Just for confirm
-  kubectl get clusterpolicy # make sure STATUS is ready
   ```
   <center>
 
   ![](./../../images/nodegroup/14.png)
 
   </center>
+
+### Verify Multiple Node-Specific Configurations
+- In this example, we will training MNIST model in TensorFlow using the GPU RTX 2080Ti and RTX 4090. The RTX 2080Ti will be shared by 4 pods using time-slicing and the RTX 4090 will be shared by 8 pods using MPS. See file [tensorflow-mnist-sample.yaml](https://github.com/vngcloud/kubernetes-sample-apps/raw/main/nvidia-gpu/manifest/tensorflow-mnist-sample.yaml).
+
+  ```bash
+  # Apply the manifest
+  kubectl apply -f \
+    https://github.com/vngcloud/kubernetes-sample-apps/raw/main/nvidia-gpu/manifest/tensorflow-mnist-sample.yaml
+
+  # Check the pods
+  kubectl get pods -owide
+
+  # Check the logs of the TensorFlow pod
+  kubectl logs <put-your-favourite-tensorflow-mnist-pod-name> --tail 20
+
+  # [Optional] Clean the resources
+  kubectl delete deploy tensorflow-mnist
+  ```
+
+  <center>
+
+  ![](./../../images/nodegroup/15.png)
+
+  </center>
+
+  > - The pods are running on the node with the GPU RTX 2080Ti and RTX 4090 within different GPU sharing strategies.
+
 
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
