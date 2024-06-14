@@ -19,7 +19,7 @@
   --set args[0]="--kubelet-insecure-tls"
   ```
 
-- **[Node Problem Detector](https://github.com/kubernetes/node-problem-detector)**
+- **[Node Problem Detector](https://github.com/kubernetes/node-problem-detector)** _(tested on VKS)_:
   ```bash
   helm install --wait node-problem-detector \
     --namespace monitoring --create-namespace \
