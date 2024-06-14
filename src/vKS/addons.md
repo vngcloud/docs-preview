@@ -19,6 +19,14 @@
   --set args[0]="--kubelet-insecure-tls"
   ```
 
+- **[Node Problem Detector](https://github.com/kubernetes/node-problem-detector)**
+  ```bash
+  helm install --wait node-problem-detector \
+    --namespace monitoring --create-namespace \
+    oci://vcr.vngcloud.vn/81-vks-public/vks-helm-charts/node-problem-detector \
+    --version 2.3.13
+  ```
+
 - **[Prometheus Adapter](https://github.com/kubernetes-sigs/prometheus-adapter)** _(tested on VKS)_:
   ```bash
   prometheus_service=$(kubectl get svc -n prometheus -lapp=kube-prometheus-stack-prometheus -ojsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
