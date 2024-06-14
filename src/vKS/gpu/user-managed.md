@@ -428,6 +428,9 @@
 
   > - The pods are running on the node with the GPU RTX 2080Ti and RTX 4090 within different GPU sharing strategies.
 
+# Monitoring GPU Resources
+- Monitoring NVIDIA GPU resources in a Kubernetes cluster is essential for ensuring optimal performance, efficient resource utilization, and proactive issue resolution. This overview provides a comprehensive guide to setting up and leveraging Prometheus and the NVIDIA Data Center GPU Manager (DCGM) to monitor GPU resources in a Kubernetes environment.
+
 
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
