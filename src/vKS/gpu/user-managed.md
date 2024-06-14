@@ -520,6 +520,82 @@
     |`DCGM_FI_DEV_GPU_TEMP`|Gauge|°C|Current GPU temperature of the device.|
     |`DCGM_FI_DEV_POWER_USAGE`|Gauge|W|Power usage of the device.|
 
+# Autoscaling GPU Resources
+- To enable this feature, you **MUST**:
+  - Enable **Autoscale** for GPU Nodegroups that you want to scale on the VKS portal.
+  - Install **[Keda](https://keda.sh/)** using Helm chart in your VKS cluster.
+
+- In the case you **DO NOT** install Keda in your cluster, **VKS autoscaler** feature will detect the `Pending` pods and scale the GPU Nodegroup automatically. This happens when the number of replicas of the `Deployment` is greater than the number of available GPUs that you configured in the `ConfigMap`.
+
+- If you already installed Keda in your cluster, you can use the `ScaledObject` to scale the GPU Nodegroup based on the metrics that you want. For example, you can scale the GPU Nodegroup based on the GPU usage, memory usage, or any other metrics that you want. For example:
+  ```yaml
+  apiVersion: keda.sh/v1alpha1
+  kind: ScaledObject
+  metadata:
+    name: scaled-object
+  spec:
+    scaleTargetRef:
+      name: scaling-app   # The name of the Deployment, MUST in same namespace
+    minReplicaCount: 1   # Optional. Default: 0
+    maxReplicaCount: 3   # Optional. Default: 100
+    triggers: # Will be trigger if either of these triggers is true
+      - type: prometheus
+        metadata: # prometheus-stack-kube-prom-prometheus
+          serverAddress: http://prometheus-stack-kube-prom-prometheus.prometheus.svc.cluster.local:9090
+          metricName: engine_active
+          query: sum(DCGM_FI_DEV_GPU_UTIL) / count(DCGM_FI_DEV_GPU_UTIL) / 100
+          threshold: '0.5'  # Scale the GPU Nodegroup when the GPU usage is greater than 50%
+      - type: prometheus
+        metadata: # prometheus-stack-kube-prom-prometheus
+          serverAddress: http://prometheus-stack-kube-prom-prometheus.prometheus.svc.cluster.local:9090
+          metricName: engine_active
+          query: sum(DCGM_FI_DEV_MEM_COPY_UTIL) / count(DCGM_FI_DEV_MEM_COPY_UTIL) / 100
+          threshold: '0.5'  # Scale the GPU Nodegroup when the GPU memory usage is greater than 50%
+  ```
+- The above manifest scales the GPU Nodegroup based on the GPU usage and memory usage. The `query` field specifies the query to fetch the metrics from Prometheus. The `threshold` field specifies the threshold value to scale the GPU Nodegroup. The `minReplicaCount` and `maxReplicaCount` fields specify the minimum and maximum number of replicas that the GPU Nodegroup can scale to.
+- Now let's install **Keda** in your cluster by executing the below command:
+  ```bash
+  helm install --wait kedacore \
+    --namespace keda --create-namespace \
+    oci://vcr.vngcloud.vn/81-vks-public/vks-helm-charts/keda \
+    --version 2.14.2
+
+  kubectl -n keda get all
+  ```
+
+  <center>
+
+  ![](./../../images/nodegroup/21.png)
+
+  ![](./../../images/nodegroup/22.png)
+
+  </center>
+
+- Apply [scaling-app.yaml](https://github.com/vngcloud/kubernetes-sample-apps/raw/main/nvidia-gpu/manifest/scaling-app.yaml) manifest to generate resources for testing the autoscaling feature. This manifest run 1 pod of CUDA VectorAdd Test and the GPU Nodegroup will be scaled to 3 when the GPU usage is greater than 50%.
+  ```bash
+  kubectl apply -f \
+    https://github.com/vngcloud/kubernetes-sample-apps/raw/main/nvidia-gpu/manifest/scaling-app.yaml
+  ```
+
+- Apply [scale-gpu.yaml](https://github.com/vngcloud/kubernetes-sample-apps/raw/main/nvidia-gpu/manifest/scale-gpu.yaml) manifest to create the `ScaleObject` for the above application. This manifest will scale the GPU Nodegroup based on the GPU usage.
+  ```bash
+  kubectl apply -f \
+    https://github.com/vngcloud/kubernetes-sample-apps/raw/main/nvidia-gpu/manifest/scale-gpu.yaml
+
+  kubectl get deploy
+
+  # Check the ScaledObject
+  kubectl get scaledobject
+  ```
+
+  <center>
+
+  ![](./../../images/nodegroup/23.png)
+
+  </center>
+  
+  > - When the `ScaledObject` **Ready** value is `True`, the GPU Nodegroup will be scaled based on the GPU usage.
+
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
 </div>
