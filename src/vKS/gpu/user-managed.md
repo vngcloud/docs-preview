@@ -430,7 +430,95 @@
 
 # Monitoring GPU Resources
 - Monitoring NVIDIA GPU resources in a Kubernetes cluster is essential for ensuring optimal performance, efficient resource utilization, and proactive issue resolution. This overview provides a comprehensive guide to setting up and leveraging Prometheus and the NVIDIA Data Center GPU Manager (DCGM) to monitor GPU resources in a Kubernetes environment.
+- Firstly, we need to install **Prometheus Stack** and **Prometheus Adapter** to integrate with the Kubernetes API server. Execute the following command to install the Prometheus Stack and Prometheus Adapter in your VKS cluster:
+  ```bash
+  # Install Prometheus Stack using Helm
+  helm install --wait prometheus-stack \
+    --namespace prometheus --create-namespace \
+    oci://vcr.vngcloud.vn/81-vks-public/vks-helm-charts/kube-prometheus-stack \
+    --version 60.0.2 \
+    --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
 
+  # Install and configure Prometheus Adapter using Helm 
+  prometheus_service=$(kubectl get svc -n prometheus -lapp=kube-prometheus-stack-prometheus -ojsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+  helm install --wait prometheus-adapter \
+    --namespace prometheus --create-namespace \
+    oci://vcr.vngcloud.vn/81-vks-public/vks-helm-charts/prometheus-adapter \
+    --version 4.10.0 \
+    --set prometheus.url=http://${prometheus_service}.prometheus.svc.cluster.local
+  ```
+
+  <center>
+
+  ![](./../../images/nodegroup/16.png)
+
+  </center>
+
+- After the installation is complete, execute the following command to check the resources of Prometheus are running:
+  ```bash
+  # Check the resources of Prometheus are running
+  kubectl -n prometheus get all 
+  ```
+
+  <center>
+
+  ![](./../../images/nodegroup/17.png)
+
+  </center>
+
+- Now, we need to enable the DCGM exporter to monitor the GPU resources in the VKS cluster. Execute the following command to enable the DCGM exporter in your VKS cluster:
+  ```bash
+  # Enable the DCGM exporter
+  kubectl patch clusterpolicies.nvidia.com/cluster-policy \
+    -n gpu-operator --type merge \
+    -p '{"spec": {"dcgmExporter": {"enabled": true}}}'
+
+  # Confirm Prometheus can scrape the DCGM exporter metrics, sometime you MUST wait for a few minutes
+  # (about 1-3 mins) for the DCGM exporter to be ready
+  kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1 | jq -r . | grep DCGM
+  ```
+
+  <center>
+
+  ![](./../../images/nodegroup/18.png)
+
+  </center>
+
+- Let's forward the Prometheus Adapter to your local machine to check the GPU metrics by visit [http://localhost:9090](http://localhost:9090):
+  ```bash
+  # Forward the Prometheus Adapter to your local machine
+  kubectl -n prometheus \
+    port-forward svc/prometheus-stack-kube-prom-prometheus 9090:9090
+  ```
+
+  <center>
+
+  ![](./../../images/nodegroup/19.png)
+
+  ![](./../../images/nodegroup/20.png)
+  
+  </center>
+
+- The following table lists some observable GPU metrics. For details about more metrics, see [Field Identifiers](https://docs.nvidia.com/datacenter/dcgm/latest/dcgm-api/dcgm-api-field-ids.html#).
+  - **Table 1**: Usage
+    |Metric Name|Metric Type|Unit|Description|
+    |-|-|-|-|
+    |`DCGM_FI_DEV_GPU_UTIL`|Gauge|Percentage|GPU usage.|
+    |`DCGM_FI_DEV_MEM_COPY_UTIL`|Gauge|Percentage|Memory usage.|
+    |`DCGM_FI_DEV_ENC_UTIL`|Gauge|Percentage|Encoder usage.|
+    |`DCGM_FI_DEV_DEC_UTIL`|Gauge|Percentage|Decoder usage.|
+
+  - **Table 2**: Memory
+    |Metric Name|Metric Type|Unit|Description|
+    |-|-|-|-|
+    |`DCGM_FI_DEV_FB_FREE`|Gauge|MB|Number of remaining frame buffers. The frame buffer is called VRAM.|
+    |`DCGM_FI_DEV_FB_USED`|Gauge|MB|Number of used frame buffers. The value is the same as the value of memory-usage in the nvidia-smi command.|
+
+  - **Table 3**: Temperature and power
+    |Metric Name|Metric Type|Unit|Description|
+    |-|-|-|-|
+    |`DCGM_FI_DEV_GPU_TEMP`|Gauge|°C|Current GPU temperature of the device.|
+    |`DCGM_FI_DEV_POWER_USAGE`|Gauge|W|Power usage of the device.|
 
 <div style="float: right;">
 <i>Cuong. Duong Manh - 2024/06/12</i>
