@@ -500,6 +500,7 @@
 
 - The following table lists some observable GPU metrics. For details about more metrics, see [Field Identifiers](https://docs.nvidia.com/datacenter/dcgm/latest/dcgm-api/dcgm-api-field-ids.html#).
   - **Table 1**: Usage
+
     |Metric Name|Metric Type|Unit|Description|
     |-|-|-|-|
     |`DCGM_FI_DEV_GPU_UTIL`|Gauge|Percentage|GPU usage.|
@@ -508,12 +509,14 @@
     |`DCGM_FI_DEV_DEC_UTIL`|Gauge|Percentage|Decoder usage.|
 
   - **Table 2**: Memory
+
     |Metric Name|Metric Type|Unit|Description|
     |-|-|-|-|
     |`DCGM_FI_DEV_FB_FREE`|Gauge|MB|Number of remaining frame buffers. The frame buffer is called VRAM.|
     |`DCGM_FI_DEV_FB_USED`|Gauge|MB|Number of used frame buffers. The value is the same as the value of memory-usage in the nvidia-smi command.|
 
   - **Table 3**: Temperature and power
+  
     |Metric Name|Metric Type|Unit|Description|
     |-|-|-|-|
     |`DCGM_FI_DEV_GPU_TEMP`|Gauge|°C|Current GPU temperature of the device.|
