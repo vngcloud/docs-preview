@@ -6,7 +6,7 @@
 
   | #                   | Issue                                                                                                                                                        | Solution                                                                                                        | Notes                                 |
   | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-  | [Issue 1](#issue-1) | _Multi-Attach error for volume "pvc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" Volume is already exclusive attached to one node and can't be attached to another_ | <ul><li>[sol-csi-01](#sol-csi-01)</li><li>[sol-csi-02](#sol-csi-02)</li><li>[sol-csi-03](#sol-csi-03)</li></ul> | ![](../../../images/csi/issue/01.png) |
+  | [Issue 1](#issue-1) | _Multi-Attach error for volume "pvc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" Volume is already exclusive attached to one node and can't be attached to another_ | <ul><li>[sol-csi-01](#sol-csi-01)</li><li>[sol-csi-02](#sol-csi-02)</li><li>[sol-csi-03](#sol-csi-03)</li><li>[sol-csi-04](#sol-csi-04)</li></ul> | ![](../../../images/csi/issue/01.png) |
 
 # Solutions
 
@@ -80,4 +80,21 @@
     ```bash
     kubectl -n <namespace> scale deployment/<deployment_name> \
       --replicas=<desired_replica>
+    ```
+
+#### sol-csi-04
+- Sometime the `VolumeAttachment` resource is not deleted properly, you can delete the `VolumeAttachment` resource manually:
+  - Get the `VolumeAttachment` resource:
+    ```bash
+    kubectl get volumeattachment -A | grep pvc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    ```
+    > ![](../../../images/csi/issue/02.png)
+  - Delete the `VolumeAttachment` resource:
+    ```bash
+    kubectl delete volumeattachment <volumeattachment-name>
+    ```
+  
+  - Delete the pod that is being stuck:
+    ```bash
+    kubectl delete pod <pod-name>
     ```
