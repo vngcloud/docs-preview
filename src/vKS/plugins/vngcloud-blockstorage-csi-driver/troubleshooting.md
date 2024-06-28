@@ -133,9 +133,10 @@
     ```
 
 #### sol-csi-06
-- Use `StatefulSet` instead of `Deployment`. The `StatefulSet`'s inherent design ensures ordered pod termination and startup, thereby eliminating the **Multi-Attach error**. Note that this solution might require additional PVC volumes.
+- Use `StatefulSet` instead of `Deployment`. 
+  - The `StatefulSet`'s inherent design ensures ordered pod termination and startup, thereby eliminating the **Multi-Attach error**. **Note** that this solution might require **additional PVC volumes**.
 
 
 #### sol-csi-07
-- Use NFS volume:
-  For production workloads and services demanding seamless roll-out deployments and scaling, consider leveraging **Network File System (NFS) volumes**. These types of volumes inherently support multi-attach scenarios, allowing multiple pods to share a single volume without encountering the **Multi-Attach error**.
+- Use **NFS volume**:
+  - For production workloads and services demanding seamless roll-out deployments and scaling, consider leveraging **Network File System (NFS) volumes**. These types of volumes inherently support multi-attach scenarios, allowing multiple pods to share a single volume without encountering the **Multi-Attach error**.
