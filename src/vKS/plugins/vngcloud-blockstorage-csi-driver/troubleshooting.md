@@ -5,7 +5,7 @@
   
   |#|Issue|Solution|Notes|
   |-|-|-|-|
-  |[Issue 1](#issue-1)|_Multi-Attach error for volume "pvc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" Volume is already exclusive attached to one node and can't be attached to another_|<ul><li>[sol-csi-01](#sol-csi-01)</li></ul>|![](../../../images/csi/issue/01.png)|
+  |[Issue 1](#issue-1)|_Multi-Attach error for volume "pvc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" Volume is already exclusive attached to one node and can't be attached to another_|<ul><li>[sol-csi-01](#sol-csi-01)</li><li>[sol-csi-02](#sol-csi-02)</li></ul>|![](../../../images/csi/issue/01.png)|
 
 # Solutions
 ## Issue 1
@@ -51,4 +51,12 @@
                     operator: In
                     values:
                     - node1
+    ```
+
+#### sol-csi-02
+- Delete and recreate the pod using the PVC:
+  - As a temporary workaround, if the volume is no longer needed on the old node, you can delete the pod and let Kubernetes reschedule it. Kubernetes will detach the volume from the old node and attach it to the new node.
+  - Example:
+    ```bash
+    kubectl delete pod <pod-name>
     ```
