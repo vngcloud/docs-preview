@@ -6,7 +6,7 @@
 
   | #                   | Issue                                                                                                                                                        | Solution                                                                                                        | Notes                                 |
   | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-  | [Issue 1](#issue-1) | _Multi-Attach error for volume "pvc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" Volume is already exclusive attached to one node and can't be attached to another_ | <ul><li>[sol-csi-01](#sol-csi-01)</li><li>[sol-csi-02](#sol-csi-02)</li><li>[sol-csi-03](#sol-csi-03)</li><li>[sol-csi-04](#sol-csi-04)</li></ul> | ![](../../../images/csi/issue/01.png) |
+  | [Issue 1](#issue-1) | _Multi-Attach error for volume "pvc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" Volume is already exclusive attached to one node and can't be attached to another_ | <ul><li>[sol-csi-01](#sol-csi-01)</li><li>[sol-csi-02](#sol-csi-02)</li><li>[sol-csi-03](#sol-csi-03)</li><li>[sol-csi-04](#sol-csi-04)</li><li>[sol-csi-05](#sol-csi-05)</li></ul> | ![](../../../images/csi/issue/01.png) |
 
 # Solutions
 
@@ -98,3 +98,37 @@
     ```bash
     kubectl delete pod <pod-name>
     ```
+
+#### sol-csi-05
+- Change **Strategy** to `Recreate`
+  - If you are using the `RollingUpdate` strategy, consider switching to the `Recreate` strategy. This ensures that the old pod is terminated before the new one is initiated, thereby releasing the PVC volume.
+  - Example:
+    ```yaml
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: my-app
+    spec:
+      replicas: 1
+      strategy:
+        type: Recreate  # Change to Recreate
+      selector:
+        matchLabels:
+          app: my-app
+      template:
+        metadata:
+          labels:
+            app: my-app
+        spec:
+          containers:
+            - name: my-app-container
+              image: my-app:latest
+              volumeMounts:
+                - mountPath: /data
+                  name: my-volume
+          volumes:
+            - name: my-volume
+              persistentVolumeClaim:
+                claimName: my-pvc
+    ```
+
