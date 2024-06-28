@@ -6,7 +6,7 @@
 
   | #                   | Issue                                                                                                                                                        | Solution                                                                                                        | Notes                                 |
   | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-  | [Issue 1](#issue-1) | _Multi-Attach error for volume "pvc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" Volume is already exclusive attached to one node and can't be attached to another_ | <ul><li>[sol-csi-01](#sol-csi-01)</li><li>[sol-csi-02](#sol-csi-02)</li><li>[sol-csi-03](#sol-csi-03)</li><li>[sol-csi-04](#sol-csi-04)</li><li>[sol-csi-05](#sol-csi-05)</li></ul> | ![](../../../images/csi/issue/01.png) |
+  | [Issue 1](#issue-1) | _Multi-Attach error for volume "pvc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" Volume is already exclusive attached to one node and can't be attached to another_ | <ul><li>[sol-csi-01](#sol-csi-01)</li><li>[sol-csi-02](#sol-csi-02)</li><li>[sol-csi-03](#sol-csi-03)</li><li>[sol-csi-04](#sol-csi-04)</li><li>[sol-csi-05](#sol-csi-05)</li><li>[sol-csi-06](#sol-csi-06)</li><li>[sol-csi-07](#sol-csi-07)</li></ul> | ![](../../../images/csi/issue/01.png) |
 
 # Solutions
 
@@ -132,3 +132,10 @@
                 claimName: my-pvc
     ```
 
+#### sol-csi-06
+- Use `StatefulSet` instead of `Deployment`. The `StatefulSet`'s inherent design ensures ordered pod termination and startup, thereby eliminating the **Multi-Attach error**. Note that this solution might require additional PVC volumes.
+
+
+#### sol-csi-07
+- Use NFS volume:
+  For production workloads and services demanding seamless roll-out deployments and scaling, consider leveraging **Network File System (NFS) volumes**. These types of volumes inherently support multi-attach scenarios, allowing multiple pods to share a single volume without encountering the **Multi-Attach error**.
