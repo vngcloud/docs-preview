@@ -100,7 +100,7 @@
     ```
 
 #### sol-csi-05
-- Change **Strategy** to `Recreate`
+- Change **Strategy** to `Recreate` _(**IMPORTANT**: Be aware that this strategy may lead to application downtime during the transition)._
   - If you are using the `RollingUpdate` strategy, consider switching to the `Recreate` strategy. This ensures that the old pod is terminated before the new one is initiated, thereby releasing the PVC volume.
   - Example:
     ```yaml
